@@ -1,5 +1,5 @@
 $StrComputer = $env:COMPUTERNAME
-$baseUrl = "http://192.168.0.3/labo777/ivanti/agent/"
+$baseUrl = "http://epm2024.monlab.lan/share/ivanti/agent/"
 $fileNames = @(
     "d3873a1c.0",
     "EPM_Manifest",
