@@ -1,22 +1,43 @@
 ############################################### SQL ################################################################
-$Exporthtml = "C:\temp\default.htm"
-$ServerSQL = "epm2024.monlab.lan"
-$database = "EPM"
-$user = "sa"
-
-# Best solution with password encrypt
-#$password = ConvertTo-SecureString -String "xxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxxx"
-#$creds    = New-Object -TypeName System.Management.Automation.PsCredential -ArgumentList ($user, $password)
-
-# bad solution with visible password
-$password = "Password1"
-$creds = New-Object -TypeName System.Management.Automation.PsCredential -ArgumentList ($user, (ConvertTo-SecureString -String $password -AsPlainText -Force))
-$PassSQL = $creds.GetNetworkCredential().Password
+$Exporthtml = "C:\Exploitation\report\SuiviOS.htm"
+$configPath = "C:\Scripts\config.json"
 ############################################### SQL ################################################################
+
+
+$config = Get-Content $configPath | ConvertFrom-Json
+$ServerSQL = $config.SQL.Server
+$database = $config.SQL.Database
+$user = $config.SQL.Username
+$password = $config.SQL.Password
+
+# Convertir le mot de passe en SecureString
+$securePassword = ConvertTo-SecureString -String $password -AsPlainText -Force
+$creds = New-Object -TypeName System.Management.Automation.PSCredential -ArgumentList ($user, $securePassword)
+$PassSQL = $creds.GetNetworkCredential().Password
 
 
 Import-Module -Name PSwriteHTML
 . ([scriptblock]::Create((Invoke-WebRequest -Uri "https://raw.githubusercontent.com/DavidWuibaille/Repository/main/Function/DashboardEPM.ps1" -UseBasicParsing).Content))
+
+$Connection            = Connect-SQLDatabase                     -Server $ServerSQL -Database $database -User $user -Password $PassSQL
+#$Application1          = Get-ApplicationData                     -Connection $Connection -AppFilter $ApplicationFilter1
+#$Application2          = Get-ApplicationData                     -Connection $Connection -AppFilter $ApplicationFilter2
+#$BitlockerDetails      = Get-BitlockerDetails                    -Connection $Connection
+$WindowsDetails        = Get-WindowsDetails                      -Connection $Connection
+$WorkstationModels     = Get-WorkstationModels                   -Connection $Connection
+#$WorkstationMakes      = Get-WorkstationManufacturers            -Connection $Connection
+#$Variable1             = Get-EnvironmentVariables                -Connection $Connection -VariableName $VariableFilter1
+#$HardwareScanDay       = Get-HardwareScanDay                     -Connection $Connection
+$WindowsgroupesVersion = $WindowsDetails    | Group-Object -Property VERSION
+#$BitlockerStatus       = $BitlockerDetails  | Group-Object -Property Bitlocker
+$Modelscount           = $WorkstationModels | Group-Object -Property MODEL
+$Makesount             = $WorkstationMakes  | Group-Object -Property MANUFACTURER
+#$ScanDaycount          = HardwareScanDay    | Group-Object -Property SCAN_CATEGORY
+Close-SQLConnection -Connection $Connection
+
+
+
+
 
 # Sauvegarde quotidienne des versions Windows
 $scriptPath = Split-Path -Parent $MyInvocation.MyCommand.Definition
@@ -31,8 +52,20 @@ $todayData = $WindowsgroupesVersion | ForEach-Object {
     }
 }
 
+$yesterday = (Get-Date).AddDays(-1).ToString("yyyy-MM-dd")
+
 if (-Not (Test-Path $historyFile)) {
-    $todayData | Export-Csv -Path $historyFile -NoTypeInformation -Encoding UTF8
+    # Si le fichier n'existe pas, on crée aussi les données d'hier à zéro
+    $yesterdayData = $WindowsgroupesVersion | ForEach-Object {
+        [PSCustomObject]@{
+            Date    = $yesterday
+            Version = $_.Name
+            Count   = 0
+        }
+    }
+
+    # On combine hier (zéro) + aujourd'hui (réel)
+    $yesterdayData + $todayData | Export-Csv -Path $historyFile -NoTypeInformation -Encoding UTF8
 } else {
     $existingData = Import-Csv $historyFile
     $newEntries = $todayData | Where-Object {
@@ -46,12 +79,19 @@ if (-Not (Test-Path $historyFile)) {
 
 # Génération des courbes temporelles
 $history = Import-Csv -Path $historyFile
+
+# Assurer que Count est bien un entier (au cas où CSV l'ait converti en string)
+$history | ForEach-Object { $_.Count = [int]$_.Count }
+
 $versions = $history.Version | Sort-Object -Unique
 $dates = $history.Date | Sort-Object -Unique
 
+# Courbe pour chaque version complète
 $lines = foreach ($version in $versions) {
     $valeurs = foreach ($date in $dates) {
-        ($history | Where-Object { $_.Date -eq $date -and $_.Version -eq $version }).Count | Measure-Object -Sum | Select-Object -ExpandProperty Sum
+        $sum = ($history | Where-Object { $_.Date -eq $date -and $_.Version -eq $version } | Measure-Object -Property Count -Sum).Sum
+        if (-not $sum) { $sum = 0 }
+        $sum
     }
     [PSCustomObject]@{
         Version = $version
@@ -59,14 +99,16 @@ $lines = foreach ($version in $versions) {
     }
 }
 
-# Préparer les données groupées par version majeure (ex: 19044)
+# Ajouter colonne MajorVersion à partir de Version
 $historyGrouped = $history | ForEach-Object {
     $_ | Add-Member -NotePropertyName "MajorVersion" -NotePropertyValue ($_.Version -split '\.')[0] -Force
     $_
 }
 
+# Liste des versions majeures uniques
 $majorVersions = $historyGrouped.MajorVersion | Sort-Object -Unique
 
+# Dictionnaire de labels lisibles
 $versionLabels = @{
     "14393" = "Windows 10 1607"
     "17763" = "Windows 10 1809"
@@ -76,17 +118,30 @@ $versionLabels = @{
     "22631" = "Windows 11 23H2"
 }
 
-
+# Courbes pour les versions majeures
 $linesMajor = foreach ($version in $majorVersions) {
     $valeurs = foreach ($date in $dates) {
-        ($historyGrouped | Where-Object { $_.Date -eq $date -and $_.MajorVersion -eq $version }).Count | Measure-Object -Sum | Select-Object -ExpandProperty Sum
+        $sum = ($historyGrouped | Where-Object {
+            $_.Date -eq $date -and $_.MajorVersion -eq $version
+        } | Measure-Object -Property Count -Sum).Sum
+
+        if (-not $sum) { $sum = 0 }
+        $sum
+    }
+
+    $displayName = if ($versionLabels.ContainsKey($version)) {
+        $versionLabels[$version]
+    } else {
+        $version
     }
 
     [PSCustomObject]@{
-        Version = $versionLabels[$version] | ForEach-Object { if ($_ -ne $null) { $_ } else { $version } }
+        Version = $displayName
         Values  = $valeurs
     }
 }
+
+
 
 # Rapport HTML
 New-HTML -TitleText 'Dashboard' {
@@ -103,6 +158,17 @@ New-HTML -TitleText 'Dashboard' {
                     }
                 }
             }
+			
+			New-HTMLPanel {
+				New-HTMLChart -Title "Windows Major" {
+					New-ChartToolbar -Download
+					 foreach ($line in $linesMajor) {
+						$total = ($line.Values | Measure-Object -Sum).Sum
+						New-ChartDonut -Name $($line.Version) -Value $total
+					}
+				}
+			}			
+			
         }
         New-HTMLSection -Invisible {
             New-HTMLPanel {
