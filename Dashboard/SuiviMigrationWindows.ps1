@@ -1,5 +1,5 @@
 ############################################### SQL ################################################################
-$Exporthtml = "C:\Exploitation\report\default.htm"
+$Exporthtml = "C:\Exploitation\WSUS\default.htm"
 $configPath = "C:\Scripts\config.json"
 ############################################### SQL ################################################################
 
@@ -148,37 +148,6 @@ New-HTML -TitleText 'Dashboard' {
 
     # Onglet Windows - Donut chart actuel
     New-HTMLTab -Name 'Windows' {
-        New-HTMLSection -HeaderText 'Windows Version' {
-            New-HTMLPanel {
-                New-HTMLChart -Title "Version" {
-                    New-ChartToolbar -Download
-                    New-ChartEvent -DataTableID 'WindowsOS' -ColumnID 1
-                    foreach ($groupe in $WindowsgroupesVersion) {
-                        New-ChartDonut -Name $($groupe.Name) -Value $($groupe.Count)
-                    }
-                }
-            }
-			
-			New-HTMLPanel {
-				New-HTMLChart -Title "Windows Major" {
-					New-ChartToolbar -Download
-					 foreach ($line in $linesMajor) {
-						$total = ($line.Values | Measure-Object -Sum).Sum
-						New-ChartDonut -Name $($line.Version) -Value $total
-					}
-				}
-			}			
-			
-        }
-        New-HTMLSection -Invisible {
-            New-HTMLPanel {
-                New-HTMLTable -DataTable $WindowsDetails -DataTableID 'WindowsOS' -HideFooter
-            }
-        }
-    }
-
-    # Onglet Timeline - Évolution dans le temps
-    New-HTMLTab -Name 'Windows Timeline' {
         New-HTMLSection -HeaderText 'Windows Versions Over Time' {
             New-HTMLPanel {
                 New-HTMLChart -Title "Windows Versions (Daily Evolution)" -TitleAlignment center {
@@ -189,18 +158,46 @@ New-HTML -TitleText 'Dashboard' {
                 }
             }
         }
-# Deuxième graphique en-dessous
-New-HTMLSection -HeaderText 'Windows Versions Over Time (Grouped by Major Version)' {
-    New-HTMLPanel {
-        New-HTMLChart -Title "Windows Major Versions (Daily Evolution)" -TitleAlignment center {
-            New-ChartAxisX -Names $dates
-            foreach ($line in $linesMajor) {
-                New-ChartLine -Name $line.Version -Value $line.Values
+        New-HTMLSection -HeaderText 'Windows Version' {
+            New-HTMLPanel {
+                New-HTMLChart -Title "Version" {
+                    New-ChartToolbar -Download
+                    New-ChartEvent -DataTableID 'WindowsOS' -ColumnID 1
+                    foreach ($groupe in $WindowsgroupesVersion) {
+                        New-ChartDonut -Name $($groupe.Name) -Value $($groupe.Count)
+                    }
+                }
+            }
+        }
+        New-HTMLSection -Invisible {
+            New-HTMLPanel {
+                New-HTMLTable -DataTable $WindowsDetails -DataTableID 'WindowsOS' -HideFooter
             }
         }
     }
-}		
-		
+
+    # Onglet Windows major
+    New-HTMLTab -Name 'Windows major' {
+
+        New-HTMLSection -HeaderText 'Windows Versions Over Time (Grouped by Major Version)' {
+            New-HTMLPanel {
+                New-HTMLChart -Title "Windows Major Versions (Daily Evolution)" -TitleAlignment center {
+                    New-ChartAxisX -Names $dates
+                    foreach ($line in $linesMajor) {
+                        New-ChartLine -Name $line.Version -Value $line.Values
+                    }
+                }
+            }
+            New-HTMLPanel {
+                New-HTMLChart -Title "Windows Major" {
+                    New-ChartToolbar -Download
+                    foreach ($line in $linesMajor) {
+                        $total = ($line.Values | Measure-Object -Sum).Sum
+                        New-ChartDonut -Name $($line.Version) -Value $total
+                    }
+                }
+            }
+        }
     }
 
     # Onglet Hardware
@@ -217,8 +214,8 @@ New-HTMLSection -HeaderText 'Windows Versions Over Time (Grouped by Major Versio
             }
         }
         New-HTMLSection -HeaderText 'Models details' {
-            New-HTMLTable -DataTable $WorkstationModels -DataTableID 'Modelcount' -HideFooter {
-                "<H1>Models Details</H1>"
+            New-HTMLPanel {
+                New-HTMLTable -DataTable $WorkstationModels -DataTableID 'Modelcount' -HideFooter
             }
         }
     }
