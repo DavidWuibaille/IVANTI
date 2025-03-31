@@ -1,14 +1,11 @@
-############################################### SQL ################################################################
-$Exporthtml = "C:\Exploitation\WSUS\default.htm"
-$configPath = "C:\Scripts\config.json"
-############################################### SQL ################################################################
-
-
 $config = Get-Content $configPath | ConvertFrom-Json
 $ServerSQL = $config.SQL.Server
 $database = $config.SQL.Database
 $user = $config.SQL.Username
 $password = $config.SQL.Password
+$Exporthtml = $config.Paths.ExportHtml
+$configPath = $config.Paths.ConfigPath
+
 
 # Convertir le mot de passe en SecureString
 $securePassword = ConvertTo-SecureString -String $password -AsPlainText -Force
