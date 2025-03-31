@@ -4,5 +4,9 @@
     "Database": "LDMS",
     "Username": "sa",
     "Password": "Password1!"
+  },
+  "Paths": {
+    "ExportHtml": "C:\\Exploitation\\WSUS\\default.htm",
+    "ConfigPath": "C:\\Scripts\\config.json"
   }
 }
