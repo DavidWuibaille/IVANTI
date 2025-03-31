@@ -564,29 +564,31 @@ $todayData = $WindowsgroupesVersion | ForEach-Object {
 
 $yesterday = (Get-Date).AddDays(-1).ToString("yyyy-MM-dd")
 
-if (-Not (Test-Path $historyFile)) {
-    # Si le fichier n'existe pas, on crée aussi les données d'hier à zéro
-    $yesterdayData = $WindowsgroupesVersion | ForEach-Object {
-        [PSCustomObject]@{
-            Date    = $yesterday
-            Version = $_.Name
-            Count   = 0
-        }
-    }
 
-    # On combine hier (zéro) + aujourd'hui (réel)
-    $yesterdayData + $todayData | Export-Csv -Path $historyFile -NoTypeInformation -Encoding UTF8
-} else {
-    $existingData = Import-Csv $historyFile
-    $newEntries = $todayData | Where-Object {
-        $version = $_.Version
-        -Not ($existingData | Where-Object { $_.Date -eq $today -and $_.Version -eq $version })
-    }
-    if ($newEntries) {
-        $newEntries | Export-Csv -Path $historyFile -Append -NoTypeInformation -Encoding UTF8
+
+$raw = Import-Csv -Path $historyFile
+
+$cleaned = foreach ($entry in $raw) {
+    $date    = $entry.Date
+    $version = $entry.Version
+    $count   = [int]$entry.Count
+
+    $parts = $version -split '\.'
+    $build = $parts[0]
+    $ubr   = $parts[1]
+
+    if ($ubr -match '^\d+$') {
+        $cleanCode = Clean-WindowsVersion -OSType '' -Build $build
+        [PSCustomObject]@{
+            Date    = $date
+            Version = "$cleanCode.$ubr"
+            Count   = $count
+        }
     }
 }
 
+# Réécriture propre du CSV (overwrite)
+$cleaned | Export-Csv -Path $historyFile -NoTypeInformation -Encoding UTF8
 # Génération des courbes temporelles
 $rawHistory = Import-Csv -Path $historyFile
 
