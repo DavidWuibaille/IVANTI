@@ -105,30 +105,6 @@ $historyGrouped = $history | ForEach-Object {
 # Liste des versions majeures uniques
 $majorVersions = $historyGrouped.MajorVersion | Sort-Object -Unique
 
-# Dictionnaire de labels lisibles
-$versionLabels = @{
-    "10240" = "Windows 10 RTM"
-    "14393" = "Windows 10 1607"
-    "15063" = "Windows 10 1703"
-    "16299" = "Windows 10 1709"
-    "17134" = "Windows 10 1803"
-    "17763" = "Windows 10 1809"
-    "18362" = "Windows 10 1903"
-    "18363" = "Windows 10 1909"
-    "19041" = "Windows 10 2004"
-    "19042" = "Windows 10 20H2"
-    "19043" = "Windows 10 21H1"
-    "19044" = "Windows 10 21H2"
-    "19045" = "Windows 10 22H2"
-    "20348" = "Windows Server 2022"
-    "22000" = "Windows 11 21H2"
-    "22621" = "Windows 11 22H2"
-    "22631" = "Windows 11 23H2"
-    "26100" = "Windows 11 24H2"
-    "7600"  = "Windows 7 RTM"
-    "7601"  = "Windows 7 SP1"
-    "9600"  = "Windows 8.1"
-}
 
 
 # Courbes pour les versions majeures
