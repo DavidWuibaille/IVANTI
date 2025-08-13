@@ -1,5 +1,12 @@
-# Documentation
+# Kill Ivanti Provisioning (Ldprovision) — PowerShell
 
-For the full documentation, please visit the link below:
+Small helper script to continuously kill the **Ivanti provisioning** process `Ldprovision`.  
+Useful when provisioning hangs or loops during troubleshooting.
 
-[kill provisioning](https://blog.wuibaille.fr/2023/04/epm-kill-provisionning/)
+## Usage
+```powershell
+.\kill-ldprovision.ps1
+```
+
+## Requirements
+Run as Administrator
