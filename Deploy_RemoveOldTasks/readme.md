@@ -1,31 +1,24 @@
-# Cleanup Ivanti EPM Scheduled Tasks (SQL + MBSDK)
+# Hyper-V Guest Script Runner (GUI)
 
-Deletes old Ivanti/LANDesk tasks based on **NEXT_START** age, then calls **MBSDK `DeleteTask()`**.  
-Skips tasks with names containing **PORTAL** or **Download patch content**.  
-Default retention **30 days** (tasks matching `*EN-BE*` use **2 days**).
+Run a `.ps1` inside one or more “Running” Windows VMs via PowerShell Direct.  
+Scripts are listed from `https://nas.wuibaille.fr/WS/postype/`.
 
-## What it does
-- Query: `LDMS.dbo.LD_TASK` via SQL.
-- Compute days since `NEXT_START`.
-- If `days > retention`, delete task via MBSDK.
-- Console output shows task name, days, and deletions.
+## Features
+- Auto-discover running VMs on the local Hyper-V host
+- Fetch available `.ps1` scripts from the URL above
+- Enter guest credentials once, run on multiple VMs
+- Optional `gpupdate /force` after the script
+- Inline log (download status, script exit code, gpupdate exit code)
 
 ## Prerequisites
-- Windows PowerShell 5.1+ / PowerShell 7+
-- Network access to **SQL Server** and **MBSDK** endpoint
-- SQL read access on `LDMS` (table `LD_TASK`)
-- MBSDK account permitted to delete tasks
+- Host: Windows 10/11 with Hyper-V role + Hyper-V PowerShell module
+- Run PowerShell as Administrator on the host
+- Guests: Windows 10/11 (or Server 2016+) in “Running” state with an admin account (e.g., `.\Administrator`)
+- Guests must reach `https://nas.wuibaille.fr` (HTTPS) to download the script
+- PowerShell Direct works only from the **same** Hyper-V host that runs the VMs
 
-## Configure (edit in script)
-- SQL: `$dataSource`, `$user`, `$PassSQL`, `$database`
-- MBSDK URL & creds:
-  - `New-WebServiceProxy -Uri http://server/MBSDKService/MsgSDK.asmx?WSDL`
-  - `Get-Credential "domain\\user"`
-- Retention rules:
-  - Default: `$Retentionday = 30`
-  - Special case: `if ($Nomtache -like "*EN-BE*") { $Retentionday = 2 }`
-- Exclusions: names like `*PORTAL*`, `*Download patch content*`
-
-## Usage
+## File & Config
+Script: `Invoke-GuestScript-GUI.ps1`  
+At the top of the file:
 ```powershell
-powershell -ExecutionPolicy Bypass -File .\RemoveOldTask.ps1
+$BaseUrl = 'https://nas.wuibaille.fr/WS/postype/'
