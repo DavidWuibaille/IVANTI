@@ -12,7 +12,9 @@
 use addtotask.ps1
 
 ![Task ID](readme1.png)
+
 In “Task ID”, add your task ID
 
 ![Computer](readme2.png)
+
 In “Computer”, add the computers to be added to the task
