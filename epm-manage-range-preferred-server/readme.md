@@ -1,5 +1,14 @@
 # Documentation
 
-For the full documentation, please visit the link below:
+Script to Add or Remove IP Ranges on a Preferred Server
 
-[Add or Remove Ip Adresse From preferred server](https://blog.wuibaille.fr/2023/04/epm-add-or-remove-ip-adresse-from-preferred-server/)
+This script does not directly add IP ranges to preferred servers but generates the SQL commands to do so.
+
+
+##Usage Example
+
+```powershell
+RemoveAllIP -NamePreferedServer "epm2021.leblogosd.lan"
+AddIP -NamePreferedServer "epm2021.leblogosd.lan" -IPadressStart "192.168.0.1" -IPadressEnd "192.168.0.254"
+RemoveIP -NamePreferedServer "epm2021.leblogosd.lan" -IPadressStart "192.168.0.1" -IPadressEnd "192.168.0.254"
+```
