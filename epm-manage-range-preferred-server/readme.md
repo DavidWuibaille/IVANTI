@@ -5,7 +5,7 @@ Script to Add or Remove IP Ranges on a Preferred Server
 This script does not directly add IP ranges to preferred servers but generates the SQL commands to do so.
 
 
-##Usage Example
+## Usage Example
 
 ```powershell
 RemoveAllIP -NamePreferedServer "epm2021.leblogosd.lan"
