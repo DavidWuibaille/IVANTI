@@ -5,9 +5,12 @@ Purge old IIS log files to prevent the C: drive from filling up (IIS logs are st
 
 
 ## Usage
-
-Adjust $LogPath, $maxDaystoKeep, and $outputPath as needed.
-
+Edit these variables :
+```powershell
+$LogPath
+$maxDaystoKeep
+$outputPath
+```
 Run from an elevated PowerShell prompt on the IIS server.
 
 ## Schedule (Task Scheduler)
