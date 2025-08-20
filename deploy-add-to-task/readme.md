@@ -7,13 +7,12 @@
 - Quickly adds multiple machines to a scheduled task.
 - Leverages a web service to interact with IVANTI Endpoint Manager.
 
-## Prerequisites
-- **PowerShell**: Version 5.1 or higher.
-- **.NET Framework**: Ensure PowerShell is configured to run scripts with a graphical interface (STA mode).
-- Credentials with access to IVANTI Endpoint Manager services.
 
-## Installation
-1. Clone this repository:
-   ```bash
-   git clone https://github.com/DavidWuibaille/IVANTI.git
-   cd IVANTI/AddToTask
+## Usage
+use addtotask.ps1
+
+![Task ID](readme1.png)
+In “Task ID”, add your task ID
+
+![Computer](readme2.png)
+In “Computer”, add the computers to be added to the task
