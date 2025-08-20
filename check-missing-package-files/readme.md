@@ -18,9 +18,9 @@ $database   = "EPM2021"             # EPM database
 ```
 ## What it does
 - SELECT * FROM dbo.PACKAGE and SELECT * FROM dbo.PACKAGE_FILES_HASH
-- For each package/file hash:
--- If FULL_PATH starts with http → Invoke-WebRequest (200 = OK, else MISSING)
--- If FULL_PATH starts with \\ → Test-Path on UNC (exists = OK, else MISSING)
+- For each package/file hash:<br>
+-- If FULL_PATH starts with http → Invoke-WebRequest (200 = OK, else MISSING)<br>
+-- If FULL_PATH starts with \\ → Test-Path on UNC (exists = OK, else MISSING)<br>
 
 ## What it does
 ```powershell
