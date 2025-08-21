@@ -1,24 +1,33 @@
-# Hyper-V Guest Script Runner (GUI)
+# Remove Old Scheduled Tasks (Ivanti EPM)
+Deletes outdated **scheduled tasks** from Ivanti EPM based on the next run date in `LD_TASK`, with simple name-based exclusions, via MBSDK (`MsgSDK.asmx`).
 
-Run a `.ps1` inside one or more “Running” Windows VMs via PowerShell Direct.  
-Scripts are listed from `https://nas.wuibaille.fr/WS/postype/`.
+## Requirements
+- Windows PowerShell 5.1
+- Read access to SQL database `LDMS` (table `dbo.LD_TASK`)
+- Network access to the EPM Core MBSDK endpoint
+- Account permitted to delete tasks via MBSDK
 
-## Features
-- Auto-discover running VMs on the local Hyper-V host
-- Fetch available `.ps1` scripts from the URL above
-- Enter guest credentials once, run on multiple VMs
-- Optional `gpupdate /force` after the script
-- Inline log (download status, script exit code, gpupdate exit code)
-
-## Prerequisites
-- Host: Windows 10/11 with Hyper-V role + Hyper-V PowerShell module
-- Run PowerShell as Administrator on the host
-- Guests: Windows 10/11 (or Server 2016+) in “Running” state with an admin account (e.g., `.\Administrator`)
-- Guests must reach `https://nas.wuibaille.fr` (HTTPS) to download the script
-- PowerShell Direct works only from the **same** Hyper-V host that runs the VMs
-
-## File & Config
-Script: `Invoke-GuestScript-GUI.ps1`  
-At the top of the file:
+## Configure (top of script)
 ```powershell
-$BaseUrl = 'https://nas.wuibaille.fr/WS/postype/'
+$dataSource = "InstanceBDD"            # SQL Server/instance
+$user       = "usrlandeskRead"         # SQL read-only login
+$PassSQL    = "password"               # SQL password
+$database   = "LDMS"                    # Database
+
+$mycreds = Get-Credential -Credential "domaine\\dwuibail_adm"  # EPM account
+$ldWS    = New-WebServiceProxy -Uri "http://serverlandesk.leblogosd.lan/MBSDKService/MsgSDK.asmx?WSDL" -Credential $mycreds
+```
+
+## Behavior
+Loads dbo.LD_TASK and iterates tasks:
+-- Default retention: 30 days
+-- Skips names matching *PORTAL* and *Download patch content*
+
+When NEXT_START is older than retention, calls:
+-- $ldWS.DeleteTask($taskid)
+
+
+## Run
+```powershell
+powershell.exe -NoProfile -ExecutionPolicy Bypass -File .\Remove-OldScheduledTasks.ps1
+```
