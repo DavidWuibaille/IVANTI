@@ -1,4 +1,4 @@
-# removeduplicate.ps1 — Remove Duplicate Devices (Ivanti EPM MBSDK)
+# removeduplicate.ps1 — Remove Duplicate Devices
 
 Delete duplicate computer objects left on an **old Core** after migrating to a **new Core**.  
 The script connects to both Cores via the legacy SOAP endpoint (`MBSDKService/MsgSDK.asmx`), compares by `DeviceName`, and deletes the matching device from the old Core (skips names starting with `newcore`, and ignores `GUID = "Unassigned"`).
