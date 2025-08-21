@@ -1,5 +1,9 @@
-# Documentation
+# 🌐 config.xml – Default IIS Web Share Configuration for IVANTI EPM
 
-For the full documentation, please visit the link below:
+This repository contains the `config.xml` file I use by default to configure **IIS web shares** for **IVANTI Endpoint Manager (EPM)** environments.
 
-[Configure IIS for EPM Using a Script](https://blog.wuibaille.fr/2023/04/epm-configuration-iis/)
+---
+
+## 📘 Usage
+
+Simply copy this file to the root of the web share.
