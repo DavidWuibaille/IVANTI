@@ -42,6 +42,7 @@ $baseUrl must point to the web share where your IVANTI agent files are hosted (p
 $fileNames should include all required files for the agent installation.
 
 $hostName is used for validation or connection checks and should match your Core Server’s hostname.
+
 ---
 
 ## 🚀 Deployment Steps
